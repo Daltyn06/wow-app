@@ -83,7 +83,6 @@ function App() {
       event.preventDefault()
       setName(event.currentTarget.elements.characterInput.value)
       setServer(slugify(event.currentTarget.elements.characterServer.value))
-      console.log(slugify(event.currentTarget.elements.characterServer.value))
     }
     return (
       <form onSubmit={handleSubmit}>
@@ -104,14 +103,14 @@ function App() {
       <h1>{items.name} - {items.realm}</h1>
       <h3>{gear.item_level_equipped} - {items.active_spec_name} {items.class}</h3>
       <div style={{color: score[0].segments.all.color}}>{score[0].segments.all.score}</div>
-
+      <img alt="" src={items.thumbnail_url}/>
       {topDungeons.map(item => (
           <div key={item.index}>
             {item.dungeon} {item.mythic_level} <strong>{item.score}</strong> - {timerCalc(item.clear_time_ms, item.par_time_ms)}
           </div>
         ))}
 
-        {/* <pre>{JSON.stringify(items, null, 2)}</pre> */}
+        <pre>{JSON.stringify(items, null, 2)}</pre>
         </>
       );
     }
@@ -122,10 +121,12 @@ function App() {
       {error && (
         <div>{`There is a problem fetching the post data - ${error}`}</div>
       )}
-      <CharacterForm></CharacterForm>
-      {data && (
-        <CharacterDetails></CharacterDetails>
-      )}
+      <div className='container mx-auto'>
+        <CharacterForm></CharacterForm>
+        {data && (
+          <CharacterDetails></CharacterDetails>
+        )}
+      </div>
       </>
     );
 }
