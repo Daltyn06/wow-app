@@ -9,8 +9,10 @@ import {
 function CharacterForm(props) {
   function handleSubmit(event) {
     event.preventDefault()
-    props.setName(event.currentTarget.elements.characterInput.value)
-    props.setServer(slugify(event.currentTarget.elements.characterServer.value))
+    const name = event.currentTarget.elements.characterInput.value;
+    const realm = slugify(event.currentTarget.elements.characterServer.value)
+    const url = `https://raider.io/api/v1/characters/profile?region=us&realm=${realm}&name=${name}&fields=gear%2Cmythic_plus_scores_by_season%3Acurrent%2Cmythic_plus_best_runs%2C%20mythic_plus_weekly_highest_level_runs`;
+    props.getData(url)
   }
 
   return (
@@ -47,41 +49,39 @@ function CharacterDetails(props) {
 function App() {
   const [error, setError] = React.useState(null);
   const [data, setData] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
+  const [loading, setLoading] = React.useState(null);
   const [items, setItems] = React.useState([]);
   const [gear, setGear] = React.useState([]);
   const [score, setScore] = React.useState([]);
   const [topDungeons, setTopDungeons] = React.useState([]);
-  const [name, setName] = React.useState([]);
-  const [server, setServer] = React.useState([]);
-  const url = `https://raider.io/api/v1/characters/profile?region=us&realm=${server}&name=${name}&fields=gear%2Cmythic_plus_scores_by_season%3Acurrent%2Cmythic_plus_best_runs%2C%20mythic_plus_weekly_highest_level_runs`;
 
-  React.useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(
-            `This is an HTTP error: The status is ${response.status}`
-          );
-        }
-        let actualData = await response.json();
-        setData(actualData);
-        setItems(actualData)
-        setGear(actualData.gear)
-        setScore(actualData.mythic_plus_scores_by_season)
-        setTopDungeons(actualData.mythic_plus_best_runs)
-        setError(null);
-      } catch(err) {
-        setError(err.message);
-        setData(null);
-      } finally {
-        setLoading(false);
-      }  
-    }
-    getData()
-  }, [url])
 
+  async function getData(url) {
+    try {
+      setLoading(true);
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(
+          `This is an HTTP error: The status is ${response.status}`
+        );
+      }
+      let actualData = await response.json();
+      setData(actualData);
+      setItems(actualData)
+      setGear(actualData.gear)
+      setScore(actualData.mythic_plus_scores_by_season)
+      setTopDungeons(actualData.mythic_plus_best_runs)
+      setError(null); 
+    } catch(err) {
+      console.log("error")
+      setError(err.message);
+      setData(null);
+    } finally {
+      console.log('done')
+      setLoading(false);
+    }  
+  }
+  
   return (
     <>
     {loading && <div>A moment please...</div>}
@@ -89,7 +89,7 @@ function App() {
       <div role='alert'>{`There is a problem fetching the post data - ${error}`}</div>
     )}
     <div className='container mx-auto'>
-      <CharacterForm setName={setName} setServer={setServer}></CharacterForm>
+      <CharacterForm getData={getData}></CharacterForm>
       {data && (
         <CharacterDetails gear={gear} items={items} score={score} topDungeons={topDungeons}></CharacterDetails>
       )}
